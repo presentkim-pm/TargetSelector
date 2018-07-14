@@ -26,6 +26,8 @@ declare(strict_types=1);
 
 namespace kim\present\targetselector;
 
+use kim\present\targetselector\listener\CommandEventListener;
+use pocketmine\command\CommandSender;
 use pocketmine\plugin\PluginBase;
 
 class TargetSelector extends PluginBase{
@@ -48,6 +50,20 @@ class TargetSelector extends PluginBase{
 	 * Called when the plugin is enabled
 	 */
 	public function onEnable() : void{
-		//TODO: Register event listeners
+		//Register event listeners
+		$this->getServer()->getPluginManager()->registerEvents(new CommandEventListener($this), $this);
+	}
+
+	/**
+	 * Parse target selector in command
+	 *
+	 * @param string        $command
+	 * @param CommandSender $sender
+	 *
+	 * @return string[]
+	 */
+	public function parseCommand(string $command, CommandSender $sender) : array{
+		//TODO: Parse target selector in command
+		return [$command];
 	}
 }
