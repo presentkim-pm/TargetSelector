@@ -1,0 +1,20 @@
+---
+name: TargetSelector
+main: kim\present\targetselector\TargetSelector
+version: 1.0.0
+api: [3.0.0, 4.0.0]
+author: PresentKim
+website: https://github.com/PresentKim/TargetSelector-PMMP
+description: Implement target selector in PMMP!
+
+permissions:
+  targetselector.player:
+    description: Target Selector - @p nearest player
+    default: true
+  targetselector.random:
+    description: Target Selector - @r random player
+    default: true
+  targetselector.all:
+    description: Target Selector - @a all players
+    default: op
+...
