@@ -3,7 +3,7 @@
 # New settings/defaults won't appear automatically on this file when upgrading
 
 settings:
-  update-check: "false"
+  update-check: false
 
 permission:
   #Permission of target selector
