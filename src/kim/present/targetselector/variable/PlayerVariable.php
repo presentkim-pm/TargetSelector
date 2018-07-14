@@ -45,7 +45,7 @@ class PlayerVariable extends Variable{
 	protected function onParse(string $command, CommandSender $sender) : array{
 		$target = $sender->getName();
 		if($sender instanceof Position){
-			$nearPlayer = $sender->getLevel()->getNearestEntity($sender, 0xffffff, Player::class, true);
+			$nearPlayer = $sender->getLevel()->getNearestEntity($sender, 0xff, Player::class, true);
 			if($nearPlayer instanceof Player){
 				$target = $nearPlayer->getName();
 			}
