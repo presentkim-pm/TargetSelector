@@ -27,6 +27,9 @@ declare(strict_types=1);
 namespace kim\present\targetselector;
 
 use kim\present\targetselector\listener\CommandEventListener;
+use kim\present\targetselector\variable\PlayerVariable;
+use kim\present\targetselector\variable\RandomVariable;
+use kim\present\targetselector\variable\Variable;
 use pocketmine\command\CommandSender;
 use pocketmine\plugin\PluginBase;
 
@@ -37,6 +40,44 @@ class TargetSelector extends PluginBase{
 	/** @return TargetSelector */
 	public static function getInstance() : TargetSelector{
 		return self::$instance;
+	}
+
+	/** @var Variable[] */
+	private $variables = [];
+
+	/**
+	 * @return Variable[]
+	 */
+	public function getVariables() : array{
+		return $this->variables;
+	}
+
+	/**
+	 * @param Variable $variable
+	 * @param bool     $replace
+	 *
+	 * @return bool
+	 */
+	public function registerVariable(Variable $variable, bool $replace = false) : bool{
+		$identifier = $variable::IDENTIFIER;
+		if(isset($this->variables[$identifier]) && !$replace){
+			return false;
+		}
+		$this->variables[$identifier] = $variable;
+		return true;
+	}
+
+	/**
+	 * @param string $identifier
+	 *
+	 * @return bool
+	 */
+	public function unregisterVariable(string $identifier) : bool{
+		if(isset($this->variables[$identifier])){
+			unset($this->variables[$identifier]);
+			return true;
+		}
+		return false;
 	}
 
 	/**
