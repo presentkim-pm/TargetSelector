@@ -64,7 +64,7 @@ abstract class Variable{
 	 * @return bool
 	 */
 	public function validate(string $command) : bool{
-		return (bool) preg_match("\@(?:" . $this::IDENTIFIER . "\s|" . $this::IDENTIFIER . "$)/i", $command, $matches);
+		return (bool) preg_match("/\@(?:" . $this::IDENTIFIER . "\s|" . $this::IDENTIFIER . "$)/i", $command, $matches);
 	}
 
 	/**

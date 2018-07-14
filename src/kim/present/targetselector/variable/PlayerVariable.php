@@ -50,6 +50,6 @@ class PlayerVariable extends Variable{
 				$target = $nearPlayer->getName();
 			}
 		}
-		return preg_replace($this->toString(), $target, $command, 1);
+		return preg_replace("/{$this->toString()}/", $target, $command, 1);
 	}
 }
