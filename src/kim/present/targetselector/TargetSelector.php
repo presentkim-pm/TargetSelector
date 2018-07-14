@@ -27,9 +27,9 @@ declare(strict_types=1);
 namespace kim\present\targetselector;
 
 use kim\present\targetselector\listener\CommandEventListener;
-use kim\present\targetselector\variable\PlayerVariable;
-use kim\present\targetselector\variable\RandomVariable;
-use kim\present\targetselector\variable\Variable;
+use kim\present\targetselector\variable\{
+	AllVariable, PlayerVariable, RandomVariable, Variable
+};
 use pocketmine\command\CommandSender;
 use pocketmine\plugin\PluginBase;
 
@@ -88,6 +88,7 @@ class TargetSelector extends PluginBase{
 
 		$this->registerVariable(new PlayerVariable());
 		$this->registerVariable(new RandomVariable());
+		$this->registerVariable(new AllVariable());
 	}
 
 	/**
