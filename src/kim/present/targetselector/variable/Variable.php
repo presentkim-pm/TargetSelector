@@ -53,7 +53,7 @@ abstract class Variable{
 	 *
 	 * @return array
 	 */
-	public abstract function onParse(string $command, CommandSender $sender) : array;
+	protected abstract function onParse(string $command, CommandSender $sender) : array;
 
 	/**
 	 * @param string $command

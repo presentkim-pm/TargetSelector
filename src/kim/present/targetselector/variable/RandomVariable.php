@@ -41,7 +41,7 @@ class RandomVariable extends Variable{
 	 *
 	 * @return array
 	 */
-	public function onParse(string $command, CommandSender $sender) : array{
+	protected function onParse(string $command, CommandSender $sender) : array{
 		$players = Server::getInstance()->getOnlinePlayers();
 		$randPlayer = $players[array_rand($players)];
 		return preg_replace($this->toString(), $randPlayer->getName(), $command, 1);
