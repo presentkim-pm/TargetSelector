@@ -97,12 +97,8 @@ class TargetSelector extends PluginBase{
 		$config = $this->getConfig();
 
 		//Register default variable
-		foreach([
-					new PlayerVariable(),
-					new RandomVariable(),
-					new AllVariable()
-				] as $key => $variable){
-			/** @var $variable Variable*/
+		/** @var $variable Variable */
+		foreach([new PlayerVariable(), new RandomVariable(), new AllVariable()] as $key => $variable){
 			$this->registerVariable($variable);
 
 			//Load permission's default value from config
