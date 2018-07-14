@@ -44,6 +44,9 @@ abstract class Variable{
 	public function parse(string $command, CommandSender $sender) : array{
 		if($sender->hasPermission($this::PERMISSION)){
 			return $this->onParse($command, $sender);
+		}else{
+			//Filter out cases where not has permission
+			return [str_replace($this->toString(), "PERMISSION_DENIED", $command)];
 		}
 	}
 
