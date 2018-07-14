@@ -42,7 +42,7 @@ abstract class Variable{
 	 * @return string[]
 	 */
 	public function parse(string $command, CommandSender $sender) : array{
-		if($sender->hasPermission(self::PERMISSION_PREFIX . $this::LABEL)){
+		if($sender->hasPermission($this->getPermission())){
 			return $this->onParse($command, $sender);
 		}else{
 			//Filter out cases where not has permission
@@ -64,7 +64,21 @@ abstract class Variable{
 	 * @return bool
 	 */
 	public function validate(string $command) : bool{
-		return (bool) preg_match("/\@(?:" . $this::IDENTIFIER . "\s|" . $this::IDENTIFIER . "$)/i", $command, $matches);
+		return (bool) preg_match($this->getPattern(), $command, $matches);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getPattern() : string{
+		return "/\@(?:" . $this::IDENTIFIER . "\s|" . $this::IDENTIFIER . "$)/i";
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getPermission() : string{
+		return self::PERMISSION_PREFIX . $this::LABEL;
 	}
 
 	/**
