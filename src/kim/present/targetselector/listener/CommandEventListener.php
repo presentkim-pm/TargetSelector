@@ -28,7 +28,9 @@ namespace kim\present\targetselector\listener;
 
 use kim\present\targetselector\TargetSelector;
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerCommandPreprocessEvent;
+use pocketmine\event\player\{
+	PlayerChatEvent, PlayerCommandPreprocessEvent
+};
 use pocketmine\event\server\{
 	RemoteServerCommandEvent, ServerCommandEvent
 };
@@ -59,7 +61,24 @@ class CommandEventListener implements Listener{
 			if(count($results) === 1){
 				$event->setMessage("/{$results[0]}");
 			}else{
-				//TODO: RUN EACH COMMAND of RESULTS
+				$event->setCancelled();
+
+				$server = $this->plugin->getServer();
+				$pluginManager = $server->getPluginManager();
+				foreach($results as $key => $result){
+					$eachEvent = new PlayerCommandPreprocessEvent($sender, "/{$result}");
+					$pluginManager->callEvent($eachEvent);
+					if(!$eachEvent->isCancelled()){
+						if(strpos($message = $eachEvent->getMessage(), "/") === 0){
+							$server->dispatchCommand($sender, substr($message, 1));
+						}else{
+							$server->getPluginManager()->callEvent($chatEvent = new PlayerChatEvent($sender, $message));
+							if(!$chatEvent->isCancelled()){
+								$server->broadcastMessage($server->getLanguage()->translateString($chatEvent->getFormat(), [$sender->getDisplayName(), $chatEvent->getMessage()]), $chatEvent->getRecipients());
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -76,7 +95,17 @@ class CommandEventListener implements Listener{
 		if(count($results) === 1){
 			$event->setCommand($results[0]);
 		}else{
-			//TODO: RUN EACH COMMAND of RESULTS
+			$event->setCancelled();
+
+			$server = $this->plugin->getServer();
+			$pluginManager = $server->getPluginManager();
+			foreach($results as $key => $result){
+				$eachEvent = new ServerCommandEvent($sender, $result);
+				$pluginManager->callEvent($eachEvent);
+				if(!$eachEvent->isCancelled()){
+					$server->dispatchCommand($sender, $eachEvent->getCommand());
+				}
+			}
 		}
 	}
 
