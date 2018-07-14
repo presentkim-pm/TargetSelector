@@ -85,6 +85,9 @@ class TargetSelector extends PluginBase{
 	 */
 	public function onLoad() : void{
 		self::$instance = $this;
+
+		$this->registerVariable(new PlayerVariable());
+		$this->registerVariable(new RandomVariable());
 	}
 
 	/**
