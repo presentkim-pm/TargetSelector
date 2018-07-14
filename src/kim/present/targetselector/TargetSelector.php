@@ -85,16 +85,22 @@ class TargetSelector extends PluginBase{
 	 */
 	public function onLoad() : void{
 		self::$instance = $this;
-
-		$this->registerVariable(new PlayerVariable());
-		$this->registerVariable(new RandomVariable());
-		$this->registerVariable(new AllVariable());
 	}
 
 	/**
 	 * Called when the plugin is enabled
 	 */
 	public function onEnable() : void{
+		//Register default variable
+		foreach([
+					new PlayerVariable(),
+					new RandomVariable(),
+					new AllVariable()
+				] as $key => $variable){
+			/** @var $variable Variable*/
+			$this->registerVariable($variable);
+		}
+
 		//Register event listeners
 		$this->getServer()->getPluginManager()->registerEvents(new CommandEventListener($this), $this);
 	}
