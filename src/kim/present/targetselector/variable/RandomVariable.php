@@ -39,7 +39,7 @@ class RandomVariable extends Variable{
 	 * @param string        $command
 	 * @param CommandSender $sender
 	 *
-	 * @return array
+	 * @return string[]
 	 */
 	protected function onParse(string $command, CommandSender $sender) : array{
 		$players = Server::getInstance()->getOnlinePlayers();

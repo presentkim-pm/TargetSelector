@@ -39,7 +39,7 @@ abstract class Variable{
 	 * @param string        $command
 	 * @param CommandSender $sender
 	 *
-	 * @return array
+	 * @return string[]
 	 */
 	public function parse(string $command, CommandSender $sender) : array{
 		if($sender->hasPermission($this::PERMISSION)){
@@ -54,7 +54,7 @@ abstract class Variable{
 	 * @param string        $command
 	 * @param CommandSender $sender
 	 *
-	 * @return array
+	 * @return string[]
 	 */
 	protected abstract function onParse(string $command, CommandSender $sender) : array;
 

@@ -40,7 +40,7 @@ class PlayerVariable extends Variable{
 	 * @param string        $command
 	 * @param CommandSender $sender
 	 *
-	 * @return array
+	 * @return string[]
 	 */
 	protected function onParse(string $command, CommandSender $sender) : array{
 		$target = $sender->getName();
