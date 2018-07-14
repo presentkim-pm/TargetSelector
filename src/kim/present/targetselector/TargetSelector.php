@@ -107,7 +107,23 @@ class TargetSelector extends PluginBase{
 	 * @return string[]
 	 */
 	public function parseCommand(string $command, CommandSender $sender) : array{
-		//TODO: Parse target selector in command
+		foreach($this->variables as $identifier => $variable){
+			if($variable->validate($command)){
+				$results = $variable->parse($command, $sender);
+				if(count($results) === 1){
+					return $this->parseCommand(array_pop($results), $sender);
+				}else{
+					$allResult = [];
+					foreach($results as $key => $result){
+						$eachResults = $this->parseCommand($result, $sender);
+						foreach($eachResults as $eachKey => $eachResult){
+							$allResult[] = $eachResult;
+						}
+					}
+					return $allResult;
+				}
+			}
+		}
 		return [$command];
 	}
 }
