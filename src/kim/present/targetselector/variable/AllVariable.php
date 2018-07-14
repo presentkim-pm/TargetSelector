@@ -30,8 +30,8 @@ use pocketmine\command\CommandSender;
 use pocketmine\Server;
 
 class AllVariable extends Variable{
-	/** Permission of target selector variable */
-	public const PERMISSION = self::PERMISSION_PREFIX . "all";
+	/** Label of target selector variable */
+	public const LABEL = "all";
 	/** Identifier of target selector variable */
 	public const IDENTIFIER = "a";
 

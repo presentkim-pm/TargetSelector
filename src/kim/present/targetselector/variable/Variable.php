@@ -29,9 +29,9 @@ namespace kim\present\targetselector\variable;
 use pocketmine\command\CommandSender;
 
 abstract class Variable{
-	public const PERMISSION_PREFIX = "targetselector.";
-	/** Permission of target selector variable */
-	public const PERMISSION = self::PERMISSION_PREFIX . "";
+	protected const PERMISSION_PREFIX = "targetselector.";
+	/** Label of target selector variable */
+	public const LABEL = "";
 	/** Identifier of target selector variable */
 	public const IDENTIFIER = "";
 
@@ -42,7 +42,7 @@ abstract class Variable{
 	 * @return string[]
 	 */
 	public function parse(string $command, CommandSender $sender) : array{
-		if($sender->hasPermission($this::PERMISSION)){
+		if($sender->hasPermission(self::PERMISSION_PREFIX . $this::LABEL)){
 			return $this->onParse($command, $sender);
 		}else{
 			//Filter out cases where not has permission

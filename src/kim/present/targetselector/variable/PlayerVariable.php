@@ -31,8 +31,8 @@ use pocketmine\level\Position;
 use pocketmine\Player;
 
 class PlayerVariable extends Variable{
-	/** Permission of target selector variable */
-	public const PERMISSION = self::PERMISSION_PREFIX . "player";
+	/** Label of target selector variable */
+	public const LABEL = "player";
 	/** Identifier of target selector variable */
 	public const IDENTIFIER = "p";
 

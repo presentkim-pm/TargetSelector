@@ -30,8 +30,8 @@ use pocketmine\command\CommandSender;
 use pocketmine\Server;
 
 class RandomVariable extends Variable{
-	/** Permission of target selector variable */
-	public const PERMISSION = self::PERMISSION_PREFIX . "random";
+	/** Label of target selector variable */
+	public const LABEL = "random";
 	/** Identifier of target selector variable */
 	public const IDENTIFIER = "r";
 
