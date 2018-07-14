@@ -91,6 +91,11 @@ class TargetSelector extends PluginBase{
 	 * Called when the plugin is enabled
 	 */
 	public function onEnable() : void{
+		//Load config file
+		$this->saveDefaultConfig();
+		$this->reloadConfig();
+		$config = $this->getConfig();
+
 		//Register default variable
 		foreach([
 					new PlayerVariable(),
@@ -99,10 +104,41 @@ class TargetSelector extends PluginBase{
 				] as $key => $variable){
 			/** @var $variable Variable*/
 			$this->registerVariable($variable);
+
+			//Load permission's default value from config
+			$permission = $this->getServer()->getPluginManager()->getPermission($variable->getPermission());
+			$defaultValue = $config->getNested("permission." . $variable::LABEL);
+			if($permission !== null && $defaultValue !== null){
+				$permission->setDefault($defaultValue);
+			}
 		}
 
 		//Register event listeners
 		$this->getServer()->getPluginManager()->registerEvents(new CommandEventListener($this), $this);
+	}
+
+	/**
+	 * @Override for multilingual support of the config file
+	 *
+	 * @return bool
+	 */
+	public function saveDefaultConfig() : bool{
+		$resource = $this->getResource("lang/{$this->getServer()->getLanguage()->getLang()}/config.yml");
+		if($resource === null){
+			$resource = $this->getResource("lang/eng/config.yml");
+		}
+
+		$dataFolder = $this->getDataFolder();
+		if(!file_exists($configFile = "{$dataFolder}config.yml")){
+			if(!file_exists($dataFolder)){
+				mkdir($dataFolder, 0755, true);
+			}
+			$ret = stream_copy_to_stream($resource, $fp = fopen($configFile, "wb")) > 0;
+			fclose($fp);
+			fclose($resource);
+			return $ret;
+		}
+		return false;
 	}
 
 	/**

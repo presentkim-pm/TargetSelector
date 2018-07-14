@@ -1,0 +1,10 @@
+# Advanced configuration file for TargetSelector plugin
+# Some of these settings are safe, others can break your server if modified incorrectly
+# New settings/defaults won't appear automatically on this file when upgrading
+
+permission:
+  #Permission of target selector
+  #You can change this to be what you want
+  player: "true"
+  random: "true"
+  all: "op"
