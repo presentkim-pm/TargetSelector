@@ -32,6 +32,7 @@ use kim\present\targetselector\variable\{
 	AllVariable, PlayerVariable, RandomVariable, Variable
 };
 use pocketmine\command\CommandSender;
+use pocketmine\permission\PermissionManager;
 use pocketmine\plugin\PluginBase;
 
 class TargetSelector extends PluginBase{
@@ -108,7 +109,7 @@ class TargetSelector extends PluginBase{
 			$this->registerVariable($variable);
 
 			//Load permission's default value from config
-			$permission = $this->getServer()->getPluginManager()->getPermission($variable->getPermission());
+			$permission = PermissionManager::getInstance()->getPermission($variable->getPermission());
 			$defaultValue = $config->getNested("permission." . $variable::LABEL);
 			if($permission !== null && $defaultValue !== null){
 				$permission->setDefault($defaultValue);
