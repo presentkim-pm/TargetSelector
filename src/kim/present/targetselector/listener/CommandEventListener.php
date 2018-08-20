@@ -28,12 +28,7 @@ namespace kim\present\targetselector\listener;
 
 use kim\present\targetselector\TargetSelector;
 use pocketmine\event\Listener;
-use pocketmine\event\player\{
-	PlayerChatEvent, PlayerCommandPreprocessEvent
-};
-use pocketmine\event\server\{
-	RemoteServerCommandEvent, ServerCommandEvent
-};
+use pocketmine\event\server\CommandEvent;
 
 class CommandEventListener implements Listener{
 	/** @var TargetSelector */
@@ -51,44 +46,9 @@ class CommandEventListener implements Listener{
 	/**
 	 * @priority LOWEST
 	 *
-	 * @param PlayerCommandPreprocessEvent $event
+	 * @param CommandEvent $event
 	 */
-	public function onPlayerCommandPreprocessEvent(PlayerCommandPreprocessEvent $event) : void{
-		if(strpos($message = $event->getMessage(), "/") === 0){
-			$command = substr($message, 1);
-			$sender = $event->getPlayer();
-			$results = $this->plugin->parseCommand($command, $sender);
-			if(count($results) === 1){
-				$event->setMessage("/{$results[0]}");
-			}else{
-				$event->setCancelled();
-
-				$server = $this->plugin->getServer();
-				$pluginManager = $server->getPluginManager();
-				foreach($results as $key => $result){
-					$eachEvent = new PlayerCommandPreprocessEvent($sender, "/{$result}");
-					$pluginManager->callEvent($eachEvent);
-					if(!$eachEvent->isCancelled()){
-						if(strpos($message = $eachEvent->getMessage(), "/") === 0){
-							$server->dispatchCommand($sender, substr($message, 1));
-						}else{
-							$server->getPluginManager()->callEvent($chatEvent = new PlayerChatEvent($sender, $message));
-							if(!$chatEvent->isCancelled()){
-								$server->broadcastMessage($server->getLanguage()->translateString($chatEvent->getFormat(), [$sender->getDisplayName(), $chatEvent->getMessage()]), $chatEvent->getRecipients());
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	/**
-	 * @priority LOWEST
-	 *
-	 * @param ServerCommandEvent $event
-	 */
-	public function onServerCommandEvent(ServerCommandEvent $event) : void{
+	public function onCommandEvent(CommandEvent $event) : void{
 		$command = $event->getCommand();
 		$sender = $event->getSender();
 		$results = $this->plugin->parseCommand($command, $sender);
@@ -97,24 +57,9 @@ class CommandEventListener implements Listener{
 		}else{
 			$event->setCancelled();
 
-			$server = $this->plugin->getServer();
-			$pluginManager = $server->getPluginManager();
 			foreach($results as $key => $result){
-				$eachEvent = new ServerCommandEvent($sender, $result);
-				$pluginManager->callEvent($eachEvent);
-				if(!$eachEvent->isCancelled()){
-					$server->dispatchCommand($sender, $eachEvent->getCommand());
-				}
+				$this->plugin->getServer()->dispatchCommand($sender, $result);
 			}
 		}
-	}
-
-	/**
-	 * @priority LOWEST
-	 *
-	 * @param RemoteServerCommandEvent $event
-	 */
-	public function onRemoteServerCommandEvent(RemoteServerCommandEvent $event) : void{
-		$this->onServerCommandEvent($event);
 	}
 }
