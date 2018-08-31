@@ -4,7 +4,6 @@ main: kim\present\targetselector\TargetSelector
 version: 1.0.3
 api: [3.0.0, 4.0.0]
 author: PresentKim
-website: https://github.com/PresentKim/TargetSelector-PMMP
 description: Implement target selector in PMMP!
 
 permissions:
