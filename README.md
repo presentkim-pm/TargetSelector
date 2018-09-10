@@ -1,4 +1,4 @@
-# <img src="./assets/icon/index.svg" height="50" width="50"> TargetSelector  
+# <img src="https://rawgit.com/PresentKim/SVG-files/master/plugin-icons/targetselector.svg" height="50" width="50"> TargetSelector  
 __A plugin for [PMMP](https://pmmp.io) :: Implement target selector in PMMP!__  
   
 [![license](https://img.shields.io/github/license/Blugin/TargetSelector-PMMP.svg?label=License)](./LICENSE)
