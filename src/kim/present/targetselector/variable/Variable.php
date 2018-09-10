@@ -71,20 +71,20 @@ abstract class Variable{
 	 * @return string
 	 */
 	public function getPattern() : string{
-		return "/\@(?:" . $this::IDENTIFIER . "\s|" . $this::IDENTIFIER . "$)/i";
+		return "/\@(?:" . static::IDENTIFIER . "\s|" . static::IDENTIFIER . "$)/i";
 	}
 
 	/**
 	 * @return string
 	 */
 	public function getPermission() : string{
-		return self::PERMISSION_PREFIX . $this::LABEL;
+		return self::PERMISSION_PREFIX . static::LABEL;
 	}
 
 	/**
 	 * @return string
 	 */
 	public function toString() : string{
-		return "@" . $this::IDENTIFIER;
+		return "@" . static::IDENTIFIER;
 	}
 }
