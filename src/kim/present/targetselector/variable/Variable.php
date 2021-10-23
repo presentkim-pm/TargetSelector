@@ -34,62 +34,62 @@ namespace kim\present\targetselector\variable;
 use pocketmine\command\CommandSender;
 
 abstract class Variable{
-	protected const PERMISSION_PREFIX = "targetselector.";
-	/** Label of target selector variable */
-	public const LABEL = "";
-	/** Identifier of target selector variable */
-	public const IDENTIFIER = "";
+    protected const PERMISSION_PREFIX = "targetselector.";
+    /** Label of target selector variable */
+    public const LABEL = "";
+    /** Identifier of target selector variable */
+    public const IDENTIFIER = "";
 
-	/**
-	 * @param string        $command
-	 * @param CommandSender $sender
-	 *
-	 * @return string[]
-	 */
-	public function parse(string $command, CommandSender $sender) : array{
-		if($sender->hasPermission($this->getPermission())){
-			return $this->onParse($command, $sender);
-		}else{
-			//Filter out cases where not has permission
-			return [str_replace($this->toString(), "PERMISSION_DENIED", $command)];
-		}
-	}
+    /**
+     * @param string        $command
+     * @param CommandSender $sender
+     *
+     * @return string[]
+     */
+    public function parse(string $command, CommandSender $sender) : array{
+        if($sender->hasPermission($this->getPermission())){
+            return $this->onParse($command, $sender);
+        }else{
+            //Filter out cases where not has permission
+            return [str_replace($this->toString(), "PERMISSION_DENIED", $command)];
+        }
+    }
 
-	/**
-	 * @param string        $command
-	 * @param CommandSender $sender
-	 *
-	 * @return string[]
-	 */
-	protected abstract function onParse(string $command, CommandSender $sender) : array;
+    /**
+     * @param string        $command
+     * @param CommandSender $sender
+     *
+     * @return string[]
+     */
+    protected abstract function onParse(string $command, CommandSender $sender) : array;
 
-	/**
-	 * @param string $command
-	 *
-	 * @return bool
-	 */
-	public function validate(string $command) : bool{
-		return (bool) preg_match($this->getPattern(), $command, $matches);
-	}
+    /**
+     * @param string $command
+     *
+     * @return bool
+     */
+    public function validate(string $command) : bool{
+        return (bool) preg_match($this->getPattern(), $command, $matches);
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getPattern() : string{
-		return "/\@(?:" . static::IDENTIFIER . "\s|" . static::IDENTIFIER . "$)/i";
-	}
+    /**
+     * @return string
+     */
+    public function getPattern() : string{
+        return "/\@(?:" . static::IDENTIFIER . "\s|" . static::IDENTIFIER . "$)/i";
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getPermission() : string{
-		return self::PERMISSION_PREFIX . static::LABEL;
-	}
+    /**
+     * @return string
+     */
+    public function getPermission() : string{
+        return self::PERMISSION_PREFIX . static::LABEL;
+    }
 
-	/**
-	 * @return string
-	 */
-	public function toString() : string{
-		return "@" . static::IDENTIFIER;
-	}
+    /**
+     * @return string
+     */
+    public function toString() : string{
+        return "@" . static::IDENTIFIER;
+    }
 }

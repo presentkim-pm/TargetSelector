@@ -2,7 +2,7 @@
 name: TargetSelector
 main: kim\present\targetselector\TargetSelector
 version: 1.0.3
-api: [3.0.0, 4.0.0]
+api: [ 3.0.0, 4.0.0 ]
 author: PresentKim
 description: Implement target selector in PMMP!
 

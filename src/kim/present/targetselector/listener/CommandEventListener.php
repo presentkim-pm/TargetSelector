@@ -36,35 +36,35 @@ use pocketmine\event\Listener;
 use pocketmine\event\server\CommandEvent;
 
 class CommandEventListener implements Listener{
-	/** @var TargetSelector */
-	private $plugin;
+    /** @var TargetSelector */
+    private $plugin;
 
-	/**
-	 * CommandEventListener constructor.
-	 *
-	 * @param TargetSelector $plugin
-	 */
-	public function __construct(TargetSelector $plugin){
-		$this->plugin = $plugin;
-	}
+    /**
+     * CommandEventListener constructor.
+     *
+     * @param TargetSelector $plugin
+     */
+    public function __construct(TargetSelector $plugin){
+        $this->plugin = $plugin;
+    }
 
-	/**
-	 * @priority LOWEST
-	 *
-	 * @param CommandEvent $event
-	 */
-	public function onCommandEvent(CommandEvent $event) : void{
-		$command = $event->getCommand();
-		$sender = $event->getSender();
-		$results = $this->plugin->parseCommand($command, $sender);
-		if(count($results) === 1){
-			$event->setCommand($results[0]);
-		}else{
-			$event->setCancelled();
+    /**
+     * @priority LOWEST
+     *
+     * @param CommandEvent $event
+     */
+    public function onCommandEvent(CommandEvent $event) : void{
+        $command = $event->getCommand();
+        $sender = $event->getSender();
+        $results = $this->plugin->parseCommand($command, $sender);
+        if(count($results) === 1){
+            $event->setCommand($results[0]);
+        }else{
+            $event->setCancelled();
 
-			foreach($results as $key => $result){
-				$this->plugin->getServer()->dispatchCommand($sender, $result);
-			}
-		}
-	}
+            foreach($results as $key => $result){
+                $this->plugin->getServer()->dispatchCommand($sender, $result);
+            }
+        }
+    }
 }

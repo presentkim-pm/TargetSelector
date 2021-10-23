@@ -35,22 +35,22 @@ use pocketmine\command\CommandSender;
 use pocketmine\Server;
 
 class AllVariable extends Variable{
-	/** Label of target selector variable */
-	public const LABEL = "all";
-	/** Identifier of target selector variable */
-	public const IDENTIFIER = "a";
+    /** Label of target selector variable */
+    public const LABEL = "all";
+    /** Identifier of target selector variable */
+    public const IDENTIFIER = "a";
 
-	/**
-	 * @param string        $command
-	 * @param CommandSender $sender
-	 *
-	 * @return string[]
-	 */
-	protected function onParse(string $command, CommandSender $sender) : array{
-		$results = [];
-		foreach(Server::getInstance()->getOnlinePlayers() as $key => $player){
-			$results[] = preg_replace("/{$this->toString()}/", $player->getName(), $command, 1);
-		}
-		return $results;
-	}
+    /**
+     * @param string        $command
+     * @param CommandSender $sender
+     *
+     * @return string[]
+     */
+    protected function onParse(string $command, CommandSender $sender) : array{
+        $results = [];
+        foreach(Server::getInstance()->getOnlinePlayers() as $key => $player){
+            $results[] = preg_replace("/{$this->toString()}/", $player->getName(), $command, 1);
+        }
+        return $results;
+    }
 }
