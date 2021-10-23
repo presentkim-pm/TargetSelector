@@ -33,19 +33,19 @@ namespace kim\present\targetselector\variable;
 
 use pocketmine\command\CommandSender;
 
+use function preg_match;
+use function str_replace;
+
 abstract class Variable{
     protected const PERMISSION_PREFIX = "targetselector.";
+
     /** Label of target selector variable */
     public const LABEL = "";
+
     /** Identifier of target selector variable */
     public const IDENTIFIER = "";
 
-    /**
-     * @param string        $command
-     * @param CommandSender $sender
-     *
-     * @return string[]
-     */
+    /** @return string[] */
     public function parse(string $command, CommandSender $sender) : array{
         if($sender->hasPermission($this->getPermission())){
             return $this->onParse($command, $sender);
@@ -55,40 +55,21 @@ abstract class Variable{
         }
     }
 
-    /**
-     * @param string        $command
-     * @param CommandSender $sender
-     *
-     * @return string[]
-     */
+    /** @return string[] */
     protected abstract function onParse(string $command, CommandSender $sender) : array;
 
-    /**
-     * @param string $command
-     *
-     * @return bool
-     */
     public function validate(string $command) : bool{
         return (bool) preg_match($this->getPattern(), $command, $matches);
     }
 
-    /**
-     * @return string
-     */
     public function getPattern() : string{
         return "/\@(?:" . static::IDENTIFIER . "\s|" . static::IDENTIFIER . "$)/i";
     }
 
-    /**
-     * @return string
-     */
     public function getPermission() : string{
         return self::PERMISSION_PREFIX . static::LABEL;
     }
 
-    /**
-     * @return string
-     */
     public function toString() : string{
         return "@" . static::IDENTIFIER;
     }

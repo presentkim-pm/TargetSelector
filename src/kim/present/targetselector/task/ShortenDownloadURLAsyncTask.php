@@ -35,32 +35,26 @@ use Exception;
 use kim\present\targetselector\TargetSelector;
 use pocketmine\scheduler\AsyncTask;
 
-class ShortenDownloadURLAsyncTask extends AsyncTask{
+use function curl_close;
+use function curl_exec;
+use function curl_init;
+use function curl_setopt_array;
+use function explode;
+use function is_string;
+use function str_starts_with;
+use function strlen;
+use function substr;
+
+/** @internal */
+final class ShortenDownloadURLAsyncTask extends AsyncTask{
     private const URL = "https://git.io";
 
-    /** @var string|null File-name and Download-url of latest release */
-    private $fileName, $downloadURL;
-
-    /** @var string|null Short url of latest release download */
-    private $shortURL = null;
-
-    /**
-     * ShortenDownloadURLAsyncTask constructor.
-     *
-     * @param string $fileName
-     * @param string $downloadURL
-     */
-    public function __construct(string $fileName, string $downloadURL){
-        $this->fileName = $fileName;
-        $this->downloadURL = $downloadURL;
+    public function __construct(
+        private string $fileName,
+        private string $downloadURL
+    ){
     }
 
-    /**
-     * Actions to execute when run
-     *
-     * Shorten download url of latest release
-     * Get shortened url and store that to $shortURL
-     */
     public function onRun() : void{
         try{
             curl_setopt_array($curlHandle = curl_init(), [
@@ -74,24 +68,21 @@ class ShortenDownloadURLAsyncTask extends AsyncTask{
                 CURLOPT_SSL_VERIFYHOST => false,
                 CURLOPT_SSL_VERIFYPEER => false
             ]);
-            foreach(explode("\n", curl_exec($curlHandle)) as $key => $line){
-                if(strpos($line, "Location: ") === 0){ //starts with "Location: "
-                    $this->shortURL = substr($line, strlen("Location: "));
+            foreach(explode("\n", curl_exec($curlHandle)) as $line){
+                if(str_starts_with($line, "Location: ")){
+                    $this->setResult(substr($line, strlen("Location: ")));
                 }
             }
             curl_close($curlHandle);
-        }catch(Exception $exception){
+        }catch(Exception){
         }
     }
 
-    /**
-     * Actions to execute when completed (on main thread)
-     * Implement this if you want to handle the data in your AsyncTask after it has been processed
-     */
     public function onCompletion() : void{
-        if($this->shortURL !== null){
+        $result = $this->getResult();
+        if(is_string($result)){
             $plugin = TargetSelector::getInstance();
-            $plugin->getLogger()->warning("latest release link : {$this->shortURL}");
+            $plugin->getLogger()->warning("latest release link : $result");
         }
     }
 }

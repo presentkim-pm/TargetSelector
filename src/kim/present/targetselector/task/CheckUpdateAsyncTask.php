@@ -35,32 +35,49 @@ use Exception;
 use kim\present\targetselector\TargetSelector;
 use pocketmine\scheduler\AsyncTask;
 
-class CheckUpdateAsyncTask extends AsyncTask{
-    private const CACHE_ENTITY_TAG = "e";
-    private const CACHE_LATEST_VERSION = "v";
-    private const CACHE_FILE_NAME = "f";
-    private const CACHE_DOWNLOAD_URL = "d";
-    private const RELEASE_URL = "https://api.github.com/repos/Blugin/TargetSelector-PMMP/releases/latest";
+use function curl_close;
+use function curl_exec;
+use function curl_getinfo;
+use function curl_init;
+use function curl_setopt;
+use function curl_setopt_array;
+use function explode;
+use function file_exists;
+use function file_get_contents;
+use function file_put_contents;
+use function json_decode;
+use function json_encode;
+use function str_starts_with;
+use function strlen;
+use function strpos;
+use function substr;
+use function substr_compare;
+use function version_compare;
 
-    /** @var string|null Latest version of plugin */
-    private $latestVersion = null;
+/** @internal */
+final class CheckUpdateAsyncTask extends AsyncTask{
+    private const CACHE_ENTITY_TAG = 0;
+    private const CACHE_LATEST_VERSION = 1;
+    private const CACHE_FILE_NAME = 2;
+    private const CACHE_DOWNLOAD_URL = 3;
+    private const RELEASE_URL = "https://api.github.com/repos/PresentKim-pm/TargetSelector/releases/latest";
 
-    /** @var string|null File-name and Download-url of latest release */
-    private $fileName, $downloadURL;
+    /** Latest version of plugin */
+    private ?string $latestVersion = null;
 
-    /** @var string Path of latest response cache file */
-    private $cachePath;
+    /** File-name of the latest release */
+    private ?string $fileName = null;
+
+    /** File-name of the latest release */
+    private ?string $downloadURL = null;
+
+    /** Path of the latest response cache file */
+    private string $cachePath;
 
     public function __construct(){
-        $this->cachePath = TargetSelector::getInstance()->getDataFolder() . ".latestCache";
+        $this->cachePath = TargetSelector::getInstance()->getDataFolder() . ".update_check_cache";
     }
 
-    /**
-     * Actions to execute when run
-     *
-     * Get latest version for comparing with plugin version, Store to $latestVersion
-     * Get file-name and download-url of latest release, Store to $fileName, $downloadURL
-     */
     public function onRun() : void{
         try{
             //Initialize a cURL session and set option
@@ -73,7 +90,7 @@ class CheckUpdateAsyncTask extends AsyncTask{
                 CURLOPT_USERAGENT => "true"
             ]);
 
-            //Load latest cache for prevent "API rate limit exceeded"
+            //Load the latest cache for prevent "API rate limit exceeded"
             $latestCache = [];
             if(file_exists($this->cachePath)){
                 $latestCache = json_decode(file_get_contents($this->cachePath), true);
@@ -85,17 +102,17 @@ class CheckUpdateAsyncTask extends AsyncTask{
             $headerSize = curl_getinfo($curlHandle, CURLINFO_HEADER_SIZE);
             curl_close($curlHandle);
 
-            //Get latest release data from cURL response when data is modified
+            //Get the latest release data from cURL response when data is modified
             $header = substr($response, 0, $headerSize);
             if(!strpos($header, "304 Not Modified")){
-                foreach(explode(PHP_EOL, $header) as $key => $line){
-                    if(strpos($line, "ETag: ") === 0){ //starts with "ETag: "
+                foreach(explode(PHP_EOL, $header) as $line){
+                    if(str_starts_with($line, "ETag: ")){
                         $latestCache[self::CACHE_ENTITY_TAG] = substr($line, strlen("ETag: "));
                     }
                 }
                 $jsonData = json_decode(substr($response, $headerSize), true);
                 $latestCache[self::CACHE_LATEST_VERSION] = $jsonData["tag_name"];
-                foreach($jsonData["assets"] as $key => $assetData){
+                foreach($jsonData["assets"] as $assetData){
                     if(substr_compare($assetData["name"], ".phar", -strlen(".phar")) === 0){ //ends with ".phar"
                         $latestCache[self::CACHE_FILE_NAME] = $assetData["name"];
                         $latestCache[self::CACHE_DOWNLOAD_URL] = $assetData["browser_download_url"];
@@ -106,18 +123,14 @@ class CheckUpdateAsyncTask extends AsyncTask{
             //Save latest cache
             file_put_contents($this->cachePath, json_encode($latestCache));
 
-            //Mapping latest cache to properties values
-            $this->latestVersion = $latestCache[self::CACHE_LATEST_VERSION];
-            $this->fileName = $latestCache[self::CACHE_FILE_NAME];
-            $this->downloadURL = $latestCache[self::CACHE_DOWNLOAD_URL];
-        }catch(Exception $exception){
+            //Mapping the latest cache to properties values
+            $this->latestVersion = $latestCache[self::CACHE_LATEST_VERSION] ?? null;
+            $this->fileName = $latestCache[self::CACHE_FILE_NAME] ?? null;
+            $this->downloadURL = $latestCache[self::CACHE_DOWNLOAD_URL] ?? null;
+        }catch(Exception){
         }
     }
 
-    /**
-     * Actions to execute when completed (on main thread)
-     * Implement this if you want to handle the data in your AsyncTask after it has been processed
-     */
     public function onCompletion() : void{
         $plugin = TargetSelector::getInstance();
         if($this->latestVersion === null){
@@ -125,9 +138,9 @@ class CheckUpdateAsyncTask extends AsyncTask{
         }elseif(version_compare($plugin->getDescription()->getVersion(), $this->latestVersion) >= 0){
             $plugin->getLogger()->notice("The plugin is latest version or higher (Latest version: {$this->latestVersion})");
         }else{
-            $plugin->getLogger()->warning("The plugin is not up to date. We recommend that you update your plugin. (Latest : {$this->latestVersion})");
+            $plugin->getLogger()->warning("The plugin is outdated. We recommend that you update your plugin. (Latest : {$this->latestVersion})");
 
-            //Shorten download url of latest release
+            //Shorten download url of the latest release
             $plugin->getServer()->getAsyncPool()->submitTask(new ShortenDownloadURLAsyncTask($this->fileName, $this->downloadURL));
         }
     }

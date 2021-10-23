@@ -35,24 +35,16 @@ use kim\present\targetselector\TargetSelector;
 use pocketmine\event\Listener;
 use pocketmine\event\server\CommandEvent;
 
-class CommandEventListener implements Listener{
-    /** @var TargetSelector */
-    private $plugin;
+use function count;
 
-    /**
-     * CommandEventListener constructor.
-     *
-     * @param TargetSelector $plugin
-     */
-    public function __construct(TargetSelector $plugin){
-        $this->plugin = $plugin;
+/** @internal */
+final class CommandEventListener implements Listener{
+    public function __construct(
+        private TargetSelector $plugin
+    ){
     }
 
-    /**
-     * @priority LOWEST
-     *
-     * @param CommandEvent $event
-     */
+    /** @priority LOWEST */
     public function onCommandEvent(CommandEvent $event) : void{
         $command = $event->getCommand();
         $sender = $event->getSender();
@@ -60,9 +52,9 @@ class CommandEventListener implements Listener{
         if(count($results) === 1){
             $event->setCommand($results[0]);
         }else{
-            $event->setCancelled();
+            $event->cancel();
 
-            foreach($results as $key => $result){
+            foreach($results as $result){
                 $this->plugin->getServer()->dispatchCommand($sender, $result);
             }
         }

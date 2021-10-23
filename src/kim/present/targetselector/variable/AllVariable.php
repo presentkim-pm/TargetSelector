@@ -34,21 +34,19 @@ namespace kim\present\targetselector\variable;
 use pocketmine\command\CommandSender;
 use pocketmine\Server;
 
+use function preg_replace;
+
 class AllVariable extends Variable{
     /** Label of target selector variable */
     public const LABEL = "all";
+
     /** Identifier of target selector variable */
     public const IDENTIFIER = "a";
 
-    /**
-     * @param string        $command
-     * @param CommandSender $sender
-     *
-     * @return string[]
-     */
+    /** @return string[] */
     protected function onParse(string $command, CommandSender $sender) : array{
         $results = [];
-        foreach(Server::getInstance()->getOnlinePlayers() as $key => $player){
+        foreach(Server::getInstance()->getOnlinePlayers() as $player){
             $results[] = preg_replace("/{$this->toString()}/", $player->getName(), $command, 1);
         }
         return $results;

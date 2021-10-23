@@ -32,24 +32,23 @@ declare(strict_types=1);
 namespace kim\present\targetselector\variable;
 
 use pocketmine\command\CommandSender;
-use pocketmine\level\Position;
+use pocketmine\player\Player;
+use pocketmine\world\Position;
+
+use function preg_replace;
 
 class PlayerVariable extends Variable{
     /** Label of target selector variable */
     public const LABEL = "player";
+
     /** Identifier of target selector variable */
     public const IDENTIFIER = "p";
 
-    /**
-     * @param string        $command
-     * @param CommandSender $sender
-     *
-     * @return string[]
-     */
+    /** @return string[] */
     protected function onParse(string $command, CommandSender $sender) : array{
         $target = $sender->getName();
         if($sender instanceof Position){
-            $nearPlayer = $sender->getLevel()->getNearestEntity($sender, 0xff, Player::class, true);
+            $nearPlayer = $sender->getWorld()->getNearestEntity($sender, 0xff, Player::class, true);
             if($nearPlayer instanceof Player){
                 $target = $nearPlayer->getName();
             }

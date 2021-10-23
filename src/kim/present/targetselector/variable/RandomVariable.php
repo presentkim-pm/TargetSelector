@@ -34,18 +34,17 @@ namespace kim\present\targetselector\variable;
 use pocketmine\command\CommandSender;
 use pocketmine\Server;
 
+use function array_rand;
+use function preg_replace;
+
 class RandomVariable extends Variable{
     /** Label of target selector variable */
     public const LABEL = "random";
+
     /** Identifier of target selector variable */
     public const IDENTIFIER = "r";
 
-    /**
-     * @param string        $command
-     * @param CommandSender $sender
-     *
-     * @return string[]
-     */
+    /** @return string[] */
     protected function onParse(string $command, CommandSender $sender) : array{
         $players = Server::getInstance()->getOnlinePlayers();
         if(empty($players)){

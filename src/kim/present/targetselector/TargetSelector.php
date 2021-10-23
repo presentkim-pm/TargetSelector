@@ -33,73 +33,38 @@ namespace kim\present\targetselector;
 
 use kim\present\targetselector\listener\CommandEventListener;
 use kim\present\targetselector\task\CheckUpdateAsyncTask;
-use kim\present\targetselector\variable\{
-    AllVariable,
-    PlayerVariable,
-    RandomVariable,
-    Variable};
+use kim\present\targetselector\variable\AllVariable;
+use kim\present\targetselector\variable\PlayerVariable;
+use kim\present\targetselector\variable\RandomVariable;
+use kim\present\targetselector\variable\Variable;
 use pocketmine\command\CommandSender;
+use pocketmine\permission\DefaultPermissions;
+use pocketmine\permission\Permission;
 use pocketmine\permission\PermissionManager;
+use pocketmine\permission\PermissionParser;
 use pocketmine\plugin\PluginBase;
+use pocketmine\utils\SingletonTrait;
 
-class TargetSelector extends PluginBase{
-    /** @var TargetSelector */
-    private static $instance;
+use function array_pop;
+use function count;
+use function fclose;
+use function file_exists;
+use function fopen;
+use function is_string;
+use function mkdir;
+use function stream_copy_to_stream;
 
-    /** @return TargetSelector */
-    public static function getInstance() : TargetSelector{
-        return self::$instance;
-    }
+final class TargetSelector extends PluginBase{
+    use SingletonTrait;
 
     /** @var Variable[] */
-    private $variables = [];
+    private array $variables = [];
 
-    /**
-     * @return Variable[]
-     */
-    public function getVariables() : array{
-        return $this->variables;
-    }
-
-    /**
-     * @param Variable $variable
-     * @param bool     $replace
-     *
-     * @return bool
-     */
-    public function registerVariable(Variable $variable, bool $replace = false) : bool{
-        $identifier = $variable::IDENTIFIER;
-        if(isset($this->variables[$identifier]) && !$replace){
-            return false;
-        }
-        $this->variables[$identifier] = $variable;
-        return true;
-    }
-
-    /**
-     * @param string $identifier
-     *
-     * @return bool
-     */
-    public function unregisterVariable(string $identifier) : bool{
-        if(isset($this->variables[$identifier])){
-            unset($this->variables[$identifier]);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Called when the plugin is loaded, before calling onEnable()
-     */
-    public function onLoad() : void{
+    protected function onLoad() : void{
         self::$instance = $this;
     }
 
-    /**
-     * Called when the plugin is enabled
-     */
-    public function onEnable() : void{
+    protected function onEnable() : void{
         //Load config file
         $this->saveDefaultConfig();
         $this->reloadConfig();
@@ -111,15 +76,28 @@ class TargetSelector extends PluginBase{
         }
 
         //Register default variable
+        $permManager = PermissionManager::getInstance();
+        $opRoot = $permManager->getPermission(DefaultPermissions::ROOT_OPERATOR);
+        $everyoneRoot = $permManager->getPermission(DefaultPermissions::ROOT_USER);
         /** @var $variable Variable */
-        foreach([new PlayerVariable(), new RandomVariable(), new AllVariable()] as $key => $variable){
+        foreach([new PlayerVariable(), new RandomVariable(), new AllVariable()] as $variable){
             $this->registerVariable($variable);
 
+            $permissionName = $variable->getPermission();
+            $permission = new Permission($permissionName, "Target Selector - @" . $variable::IDENTIFIER);
+            $permManager->removePermission($permission);
+            $opRoot->removeChild($permissionName);
+            $everyoneRoot->removeChild($permissionName);
+
+            $permManager->addPermission($permission);
             //Load permission's default value from config
-            $permission = PermissionManager::getInstance()->getPermission($variable->getPermission());
             $defaultValue = $config->getNested("permission." . $variable::LABEL);
-            if($permission !== null && $defaultValue !== null){
-                $permission->setDefault($defaultValue);
+            if(is_string($defaultValue)){
+                match (PermissionParser::defaultFromString($defaultValue)) {
+                    PermissionParser::DEFAULT_TRUE => $everyoneRoot->addChild($permissionName, true),
+                    PermissionParser::DEFAULT_OP => $opRoot->addChild($permissionName, true),
+                    PermissionParser::DEFAULT_NOT_OP => $everyoneRoot->addChild($permissionName, true) | $opRoot->addChild($permissionName, false)
+                };
             }
         }
 
@@ -127,11 +105,29 @@ class TargetSelector extends PluginBase{
         $this->getServer()->getPluginManager()->registerEvents(new CommandEventListener($this), $this);
     }
 
-    /**
-     * @Override for multilingual support of the config file
-     *
-     * @return bool
-     */
+    /** @return Variable[] */
+    public function getVariables() : array{
+        return $this->variables;
+    }
+
+    public function registerVariable(Variable $variable, bool $replace = false) : bool{
+        $identifier = $variable::IDENTIFIER;
+        if(isset($this->variables[$identifier]) && !$replace){
+            return false;
+        }
+        $this->variables[$identifier] = $variable;
+        return true;
+    }
+
+    public function unregisterVariable(string $identifier) : bool{
+        if(isset($this->variables[$identifier])){
+            unset($this->variables[$identifier]);
+            return true;
+        }
+        return false;
+    }
+
+    /** @Override for multilingual support of the config file */
     public function saveDefaultConfig() : bool{
         $resource = $this->getResource("lang/{$this->getServer()->getLanguage()->getLang()}/config.yml");
         if($resource === null){
@@ -139,7 +135,8 @@ class TargetSelector extends PluginBase{
         }
 
         $dataFolder = $this->getDataFolder();
-        if(!file_exists($configFile = "{$dataFolder}config.yml")){
+        $configFile = "{$dataFolder}config.yml";
+        if(!file_exists($configFile)){
             if(!file_exists($dataFolder)){
                 mkdir($dataFolder, 0755, true);
             }
@@ -151,30 +148,21 @@ class TargetSelector extends PluginBase{
         return false;
     }
 
-    /**
-     * Parse target selector in command
-     *
-     * @param string        $command
-     * @param CommandSender $sender
-     *
-     * @return string[]
-     */
+    /** @return string[] */
     public function parseCommand(string $command, CommandSender $sender) : array{
-        foreach($this->variables as $identifier => $variable){
-            if($variable->validate($command)){
-                $results = $variable->parse($command, $sender);
-                if(count($results) === 1){
-                    return $this->parseCommand(array_pop($results), $sender);
-                }else{
-                    $allResult = [];
-                    foreach($results as $key => $result){
-                        $eachResults = $this->parseCommand($result, $sender);
-                        foreach($eachResults as $eachKey => $eachResult){
-                            $allResult[] = $eachResult;
-                        }
-                    }
-                    return $allResult;
+        foreach($this->variables as $variable){
+            if(!$variable->validate($command)){
+                continue;
+            }
+            $results = $variable->parse($command, $sender);
+            if(count($results) === 1){
+                return $this->parseCommand(array_pop($results), $sender);
+            }else{
+                $allResult = [];
+                foreach($results as $result){
+                    $allResult += $this->parseCommand($result, $sender);
                 }
+                return $allResult;
             }
         }
         return [$command];
