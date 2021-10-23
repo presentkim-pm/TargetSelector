@@ -4,6 +4,5 @@ branches:
 
 projects:
   TargetSelector:
-    path: ""
     icon: assets/icon/512x512.png
 ...
