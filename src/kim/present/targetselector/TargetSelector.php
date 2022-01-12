@@ -32,7 +32,6 @@ declare(strict_types=1);
 namespace kim\present\targetselector;
 
 use kim\present\targetselector\listener\CommandEventListener;
-use kim\present\targetselector\task\CheckUpdateAsyncTask;
 use kim\present\targetselector\variable\AllVariable;
 use kim\present\targetselector\variable\PlayerVariable;
 use kim\present\targetselector\variable\RandomVariable;
@@ -69,11 +68,6 @@ final class TargetSelector extends PluginBase{
         $this->saveDefaultConfig();
         $this->reloadConfig();
         $config = $this->getConfig();
-
-        //Check latest version
-        if($config->getNested("settings.update-check", false)){
-            $this->getServer()->getAsyncPool()->submitTask(new CheckUpdateAsyncTask());
-        }
 
         //Register default variable
         $permManager = PermissionManager::getInstance();
