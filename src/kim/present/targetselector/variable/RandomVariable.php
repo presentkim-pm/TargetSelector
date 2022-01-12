@@ -49,9 +49,9 @@ class RandomVariable extends Variable{
         $players = Server::getInstance()->getOnlinePlayers();
         if(empty($players)){
             return [];
-        }else{
-            $randPlayer = $players[array_rand($players)];
-            return [preg_replace("/{$this->toString()}/", $randPlayer->getName(), $command, 1)];
         }
+
+        $randPlayer = $players[array_rand($players)];
+        return [preg_replace("/{$this->toString()}/", $randPlayer->getName(), $command, 1)];
     }
 }

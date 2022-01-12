@@ -49,14 +49,14 @@ abstract class Variable{
     public function parse(string $command, CommandSender $sender) : array{
         if($sender->hasPermission($this->getPermission())){
             return $this->onParse($command, $sender);
-        }else{
-            //Filter out cases where not has permission
-            return [str_replace($this->toString(), "PERMISSION_DENIED", $command)];
         }
+
+        //Filter out cases where not has permission
+        return [str_replace($this->toString(), "PERMISSION_DENIED", $command)];
     }
 
     /** @return string[] */
-    protected abstract function onParse(string $command, CommandSender $sender) : array;
+    abstract protected function onParse(string $command, CommandSender $sender) : array;
 
     public function validate(string $command) : bool{
         return (bool) preg_match($this->getPattern(), $command, $matches);

@@ -43,6 +43,7 @@ use pocketmine\permission\PermissionManager;
 use pocketmine\permission\PermissionParser;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
+use RuntimeException;
 
 use function array_pop;
 use function count;
@@ -71,8 +72,11 @@ final class TargetSelector extends PluginBase{
 
         //Register default variable
         $permManager = PermissionManager::getInstance();
-        $opRoot = $permManager->getPermission(DefaultPermissions::ROOT_OPERATOR);
-        $everyoneRoot = $permManager->getPermission(DefaultPermissions::ROOT_USER);
+        $operatorPermission = $permManager->getPermission(DefaultPermissions::ROOT_OPERATOR);
+        $userPermission = $permManager->getPermission(DefaultPermissions::ROOT_USER);
+        if($operatorPermission === null || $userPermission === null){
+            throw new RuntimeException("Default permissions not found");
+        }
         /** @var $variable Variable */
         foreach([new PlayerVariable(), new RandomVariable(), new AllVariable()] as $variable){
             $this->registerVariable($variable);
@@ -80,17 +84,17 @@ final class TargetSelector extends PluginBase{
             $permissionName = $variable->getPermission();
             $permission = new Permission($permissionName, "Target Selector - @" . $variable::IDENTIFIER);
             $permManager->removePermission($permission);
-            $opRoot->removeChild($permissionName);
-            $everyoneRoot->removeChild($permissionName);
+            $operatorPermission->removeChild($permissionName);
+            $userPermission->removeChild($permissionName);
 
             $permManager->addPermission($permission);
             //Load permission's default value from config
             $defaultValue = $config->getNested("permission." . $variable::LABEL);
             if(is_string($defaultValue)){
                 match (PermissionParser::defaultFromString($defaultValue)) {
-                    PermissionParser::DEFAULT_TRUE => $everyoneRoot->addChild($permissionName, true),
-                    PermissionParser::DEFAULT_OP => $opRoot->addChild($permissionName, true),
-                    PermissionParser::DEFAULT_NOT_OP => $everyoneRoot->addChild($permissionName, true) | $opRoot->addChild($permissionName, false)
+                    PermissionParser::DEFAULT_TRUE => $userPermission->addChild($permissionName, true),
+                    PermissionParser::DEFAULT_OP => $operatorPermission->addChild($permissionName, true),
+                    PermissionParser::DEFAULT_NOT_OP => $userPermission->addChild($permissionName, true) | $operatorPermission->addChild($permissionName, false)
                 };
             }
         }
@@ -151,13 +155,13 @@ final class TargetSelector extends PluginBase{
             $results = $variable->parse($command, $sender);
             if(count($results) === 1){
                 return $this->parseCommand(array_pop($results), $sender);
-            }else{
-                $allResult = [];
-                foreach($results as $result){
-                    $allResult += $this->parseCommand($result, $sender);
-                }
-                return $allResult;
             }
+
+            $allResult = [];
+            foreach($results as $result){
+                $allResult += $this->parseCommand($result, $sender);
+            }
+            return $allResult;
         }
         return [$command];
     }
